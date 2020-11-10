@@ -7265,9 +7265,9 @@ controls:
       IP ranges to a specific set of subnets where the applications and administrative
       systems reside.
     validation:
-      In each project, run ``gcloud compute firewall-rules list --format=json
+      In each project, run `gcloud compute firewall-rules list --format=json
       | jq -r '.[] | select(.sourceRanges) | select(.allowed) | select(.sourceRanges[]
-      | contains("0.0.0.0/0")) | "(.name) (.allowed[])"' and ensure no entries that
+      | contains("0.0.0.0/0")) | "(.name) (.allowed[])"'` and ensure no entries that
       permit `IPProtocol` of `tcp` and `ports` of `5432`.
     impact: 7
     nodes:
