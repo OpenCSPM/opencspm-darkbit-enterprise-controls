@@ -6,6 +6,8 @@ This repository contains a publicly available listing of the controls and suppor
 
 The controls in this repository work cooperatively with the controls in the [OpenCSPM Community Control Pack](https://github.com/OpenCSPM/opencspm-darkbit-community-controls).
 
+NOTE: This control pack is in active development.
+
 ## Requirements
 
 This repository is meant to be used in conjunction with an installation of the [OpenCSPM](https://github.com/opencspm/opencspm) solution.
