@@ -1884,10 +1884,10 @@ controls:
       Certificate Transparency Logging is performed automatically when requesting or renewing a certificate, but opting out may be useful for situations where internal host names or product names are not intended to be made public.  However, Google Chrome no longer trusts certificates that are not registered in a certificate transparency log.
 
       Passing the `--options CertificateTransparencyLoggingPreference=ENABLED` option to the `aws acm request-certificate` or `aws acm update-certificate-options` calls can re-enable transparency logging.
-    validation:
+    validation: |
       'Run `for i in $(aws acm list-certificates --region <region> --query
-      ''CertificateSummaryList[].CertificateArn'' --output text); do OUT="$(aws acm
-      describe-certificate --region <region> --certificate-arn $i --query ''Certificate.Options.CertificateTransparencyLoggingPreference'')";
+      'CertificateSummaryList[].CertificateArn' --output text); do OUT="$(aws acm
+      describe-certificate --region <region> --certificate-arn $i --query 'Certificate.Options.CertificateTransparencyLoggingPreference')";
       echo "$i: $OUT"; done` in each region and ensure all are listed as `ENABLED` for
       all non-sensitive, external facing certificates.'
     impact: 5
@@ -1948,10 +1948,10 @@ controls:
       * Exported since being issued or last renewed
       * A private certificate issued by calling the ACM RequestCertificate API
       * A private certificate issued through the management console
-    validation:
-      'In each region, run `for i in $(aws acm list-certificates --query ''CertificateSummaryList[*].CertificateArn''
+    validation: |
+      'In each region, run `for i in $(aws acm list-certificates --query 'CertificateSummaryList[*].CertificateArn'
       --region <region> --output text); do OUT="$(aws acm describe-certificate --region
-      <region> --certificate-arn $i --query ''Certificate'' --output json | jq -r ''"(.NotAfter)"'')";
+      <region> --certificate-arn $i --query 'Certificate' --output json | jq -r '"(.NotAfter)"')";
       NOW="$(date +%s)"; echo "$i: $((($OUT-$NOW)/86400))"; done` and ensure those that
       list negative numbers are no longer needed.'
     impact: 5
@@ -2137,9 +2137,7 @@ controls:
           - nist-csf-pr.ac-1
       - aws
   - id: darkbit-aws-80
-    title:
-      Security Groups Should Not Allow Ingress From All Hosts to Oracle Ports 1521
-      or 2483
+    title: Security Groups Should Not Allow Ingress From All Hosts to Oracle Ports 1521 or 2483
     description:
       Oracle database servers commonly hold application data, credentials,
       and potentially other sensitive information, and network access control is a key
@@ -2346,7 +2344,7 @@ controls:
       For each security group, review the application needs for applications
       and administrative systems that access the Redis server, and reconfigure the security
       group to only grant access to those.
-    validation:
+    validation: |
       Run `aws ec2 describe-security-groups --region <region> --query 'SecurityGroups[*]'
       --output json | jq -r --arg PROTO tcp --arg PORT 6379 '.[] | . as $group | .IpPermissions[]
       | select(.IpRanges[].CidrIp=="0.0.0.0/0" or .Ipv6Ranges[].CidrIpv6=="::/0" or
@@ -2629,9 +2627,7 @@ controls:
       - aws-wa-security-SEC-5
     - aws
   - id: darkbit-aws-85
-    title:
-      Security Groups Should Not Allow Ingress From All Hosts to Memcached Port
-      11211
+    title: Security Groups Should Not Allow Ingress From All Hosts to Memcached Port 11211
     description:
       Memcached servers commonly hold application session data, credentials,
       and potentially other sensitive information, and network access control is a key
@@ -2642,7 +2638,7 @@ controls:
       For each security group, review the application needs for applications
       and administrative systems that access the Memcached server, and reconfigure the
       security group to only grant access to those.
-    validation:
+    validation: |
       Run `aws ec2 describe-security-groups --region <region> --query 'SecurityGroups[*]'
       --output json | jq -r --arg PROTO tcp --arg PORT 11211 '.[] | . as $group | .IpPermissions[]
       | select(.IpRanges[].CidrIp=="0.0.0.0/0" or .Ipv6Ranges[].CidrIpv6=="::/0" or
@@ -2772,7 +2768,7 @@ controls:
       used, leverage `aws ec2 modify-instance-metadata-options` to require `HttpTokens`.  No
       restart of the instance is needed.  Consider enforcing all new instances to leverage
       the IMDSv2 API with an IAM condition.
-    validation:
+    validation: |
       Run `aws ec2 describe-instances --region <region> --query 'Reservations[*].Instances[*].{HttpTokens:MetadataOptions.HttpTokens,HttpEndpoint:MetadataOptions.HttpEndpoint,InstanceId:InstanceId}'
       --output json | jq -r '.[][] | "(.InstanceId) (.HttpEndpoint) (.HttpTokens)"'`
       in each region.  Verify that if `HttpEnabled` is `enabled` then `HttpTokens` is
@@ -2829,7 +2825,7 @@ controls:
       the desired AWS WAF ACL ID.  Use `aws cloudfront create-distribution` or `aws
       cloudfront update-distribution --distribution-config` and specify the ACL ID in
       the `WebACLId` field.
-    validation:
+    validation: |
       In each region, run `for i in $(aws cloudfront list-distributions --region
       <region> --query 'DistributionList.Items[*].Id' --output text); do aws cloudfront
       get-distribution --region <region> --id $i --query 'Distribution' --output json
@@ -2896,7 +2892,7 @@ controls:
       By default, auto-renewal is enabled.  If it was disabled, re-enable
       auto renewal by visiting the Route53 console's `Registered Domains` page and choosing
       `Enable`.
-    validation:
+    validation: |
       Run `aws route53domains list-domains --query 'Domains[*]' --output json
       | jq -r '.[] | "(.DomainName) (.AutoRenew)"'` and validate that all domains in
       use are set to `true`.
@@ -2953,7 +2949,7 @@ controls:
       If a Transfer Lock is not enabled, re-enable it by visiting the Route53
       console's `Registered Domains` page and choosing `Enable` for a domain's `Transfer
       Lock` setting.
-    validation:
+    validation: |
       Run `aws route53domains list-domains --query 'Domains[*]' --output json
       | jq -r '.[] | "(.DomainName) (.TransferLock)"'` and validate that all domains
       in use are set to `true`.
@@ -2987,7 +2983,7 @@ controls:
       When creating an ECR repository, pass the `--image-tag-mutability IMMUTABLE`
       config option.  To enable this on an existing registry, run `aws ecr put-image-tag-mutability
       --repository-name <reponame> --image-tag-mutability IMMUTABLE`.
-    validation:
+    validation: |
       In each region, run `aws ecr describe-repositories --region <region>
       --query "repositories[]" --output json | jq -r '.[] | "(.repositoryArn) (.imageTagMutability)"'
       | grep " MUTABLE$"` and ensure no entries are present.
@@ -3179,12 +3175,12 @@ controls:
       Use `aws elbv2 modify-load-balancer-attributes --load-balancer-arn
       <arn> --attributes Key=routing.http.drop_invalid_header_fields.enabled,Value=true`
       to enable the dropping of invalid header fields used in "request smuggling" attacks.
-    validation:
+    validation: |
       'In each region, run `for i in $(aws elbv2 describe-load-balancers --region
-      <region> --query ''LoadBalancers[*].LoadBalancerArn'' --output text); do OUT="$(aws
+      <region> --query 'LoadBalancers[*].LoadBalancerArn' --output text); do OUT="$(aws
       elbv2 describe-load-balancer-attributes --region <region> --load-balancer-arn
-      $i --query ''Attributes[]'' | jq -r ''.[] | select(.Key=="routing.http.drop_invalid_header_fields.enabled")
-      | "(.Value)"'')"; echo "$i: $OUT"; done` and verify that all are set to `true`.'
+      $i --query 'Attributes[]' | jq -r '.[] | select(.Key=="routing.http.drop_invalid_header_fields.enabled")
+      | "(.Value)"')"; echo "$i: $OUT"; done` and verify that all are set to `true`.'
     impact: 8
     nodes:
       - PLACEHOLDER
@@ -3420,11 +3416,8 @@ controls:
   - id: darkbit-aws-105
     title: Publicly Accessible EC2 Instance Should Not Have Direct Access To All S3 Buckets
     description:
-      An EC2 instance named "SFTPGateway Instance" was found to be exposed
-      to multiple IPs and small subnet blocks on TCP/22, and the attached IAM Instance
-      Role (`hub-sftpgw-01-S3WritableRole-ATS9CMCSJP08`) provides unscoped access to
-      all S3 buckets.  This includes buckets that hold sensitive EKS bootstrapping credentials,
-      the Helm charts that are deployed in-cluster, logs, backups, and more.
+      EC2 instances were found with an attached IAM Instance provides unscoped access to
+      all S3 buckets.
     remediation:
       Modify the IAM Instance Role to restrict the resources to a limited
       set of S3 buckets by name or by prefix to avoid accidentally exposing data that
