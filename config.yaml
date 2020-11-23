@@ -932,11 +932,11 @@ controls:
       Review the usage and data transiting each SQS queue, and consider enabling
       KMS encryption on queues handling sensitive data.  Existing queues can be modified
       to add encryption with minimal overhead.
-    validation:
+    validation: |
       'For each region, run `for i in $(aws sqs list-queues --region <region>
-      --query ''QueueUrls[*]'' --output text); do OUT="$(aws sqs get-queue-attributes
+      --query 'QueueUrls[*]' --output text); do OUT="$(aws sqs get-queue-attributes
       --region <region> --queue-url $i --attribute-names KmsMasterKeyId --output json
-      | jq -r ''.Attributes.KmsMasterKeyId'')"; echo "$i: $OUT"; done` and verify each
+      | jq -r '.Attributes.KmsMasterKeyId')"; echo "$i: $OUT"; done` and verify each
       entry lists a KMS Key Id.'
     impact: 2
     nodes:
@@ -1076,37 +1076,6 @@ controls:
     - aws-wa-security:
       - aws-wa-security-SEC-9
     - aws
-  - id: darkbit-aws-46
-    title: AWS Credentials Should Not Be Stored Unencrypted on Developer Disks
-    description:
-      AWS credentials used by administrators and developers are storing using
-      the default mechanism in the clear on each developer's disk.  Should one member
-      of the organization be phished or malware have access to those credentials, the
-      access provided is likely permissive enough to cause a serious security incident.  Using
-      a helper utility to encrypt/decrypt credentials such as aws-vault enforces their
-      secure storage on an administrator/developer's system.
-    remediation:
-      AWS credentials (~/.aws/credentials) can be stored in encrypted form
-      instead of cleartext on disk, and helper utilities like aws-vault can help streamline
-      the encryption/decryption process during normal use.  It is recommended that all
-      users in the organization are instructed to install and use a similar tool to
-      reduce the potential for credentials being leaked or stolen.
-    validation: N/A
-    impact: 5
-    nodes:
-      - PLACEHOLDER
-    refs:
-      - text: AWS Vault
-        url: https://github.com/99designs/aws-vault
-    tags:
-      - nist-csf:
-          - nist-csf-pr
-          - nist-csf-pr.at
-          - nist-csf-pr.at-2
-          - nist-csf-pr.ds
-          - nist-csf-pr.ds-1
-          - nist-csf-pr.ds-5
-      - aws
   - id: darkbit-aws-48
     title: Lambda Runtimes in Use Should Have Supported Versions
     description:
