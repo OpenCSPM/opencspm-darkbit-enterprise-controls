@@ -12,7 +12,7 @@ controls:
       Convert all critical RDS Instances to span multiple availability zones.  For
       non-SQL Server or Amazon Aurora instance types, this can be performed online without
       downtime, although performance degradation will occur during the process.
-    validation:
+    validation: |
       Run `aws rds describe-db-clusters --region <region> --output json |
       jq -r '.DBClusters[] | select(.Engine!="docdb") | "(.DBClusterArn) (.MultiAZ)"'`
       and `aws rds describe-db-instances --region <region> --output json | jq -r '.DBInstances[]
@@ -675,15 +675,15 @@ controls:
       to remove manual management practices. Further, using autoscaling groups, even
       for a single instance, can ensure that the correct number of systems are always
       available and configured from a known, trusted state.
-    validation:
-      'Run `if date -v-365d > /dev/null 2>&1; then OLDDATE="$(date -v-365d
+    validation: |
+      Run `if date -v-365d > /dev/null 2>&1; then OLDDATE="$(date -v-365d
       +%Y-%m-%d)"; else OLDDATE="$(date --date="-365 days" +%Y-%m-%d)"; fi; aws ec2
-      describe-instances --region <region> --query "Reservations[].Instances[?LaunchTime<=`$OLDDATE`][].{id:
-      InstanceId, launched: LaunchTime}" --output json | jq -r ''.[] | "(.id) (.launched)"''`
-      and ensure no instances are listed.'
+      describe-instances --region <region> --query "Reservations[].Instances[?LaunchTime<=$OLDDATE][].{id:
+      InstanceId, launched: LaunchTime}" --output json | jq -r '.[] | "(.id) (.launched)"'`
+      and ensure no instances are listed.
     impact: 5
     nodes:
-      - PLACEHOLDER
+      - AWS_EC2_INSTANCE
     refs:
       - text: AWS Supported Operating Systems Versions
         url: https://docs.aws.amazon.com/systems-manager/latest/userguide/prereqs-operating-systems.html
@@ -5351,7 +5351,7 @@ controls:
       - fedramp-low-SC-5
     - aws
   - id: darkbit-aws-170
-    title: Lambda Function IAM Policies Should Grant Public Execution Access
+    title: Lambda Function IAM Policies Should Not Grant Public Execution Access
     description: TODO
     remediation: TODO
     validation: TODO
@@ -7643,7 +7643,7 @@ controls:
       Workload Identity is deployed.  To map GCP Service Accounts to individual Pods/Workloads,
       create GCP Service Accounts in the Project with the necessary permissions and
       leverage Workload Identity to attach those credentials directly.
-    validation:
+    validation: |
       Run `gcloud container clusters describe <clustername> --format=json
       | jq -r 'select(.nodePools[].config.oauthScopes[] | test("cloud-platform") | not)
       | "(.name)"'` and ensure that the cluster's name is listed.
